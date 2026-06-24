@@ -22,7 +22,8 @@ comment on "did something material change since the last one?" — skip the tick
 
 `add_comment` takes the **space's** `spaceUuid` plus `targetId` (the task/subtask UUID) and
 `targetType` — passing the task UUID as `spaceUuid` fails with `space_not_found` (see
-`agent-task-workflow`).
+`agent-task-workflow`). When a turn might be **retried or resumed**, pass a stable `idempotencyKey`
+so a re-run replays the first result instead of posting the comment twice.
 
 ## Recording a PR
 

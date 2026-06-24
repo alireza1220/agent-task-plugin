@@ -39,3 +39,10 @@ If you're running as a claimed/automated executor, report lifecycle with
 `update_task_claim({ state })`: `in_progress` while working, `blocked` when you need input (post the
 details via `add_comment`), and `completed` / `failed` at the end. This is the execution signal;
 `update_subtask` / `update_task` remain the source of truth for the board itself.
+
+## Resume-safe writes
+
+Execution can be resumed mid-run, which risks re-issuing a write you already made. Pass a stable
+`idempotencyKey` on side-effecting calls (`add_comment`, `create_task`, `create_subtask`) — keyed by
+the step (e.g. `<claim>:<subtask>:open-pr`) — so a resume/retry replays the first result instead of
+double-posting or double-creating.

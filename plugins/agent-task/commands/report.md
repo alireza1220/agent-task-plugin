@@ -23,7 +23,9 @@ Ask only what isn't already implied by `$ARGUMENTS`; offer sensible defaults:
 
 - `list_tasks_and_subtasks` for the scope (filter by `projectUuid` / `groupUuid` / `status` as
   chosen; omit `spaceUuid` to span every space). Page through `nextCursor` so the report isn't
-  truncated. Pull `list_comments` (latest status notes) and `fetch` for any item you need in full.
+  truncated. For any item you need in depth, a single `fetch` now returns the full body plus inline
+  `attachments`, recent `comments`, `subtasks`, and the active `claim` (who/what's executing it) —
+  often enough without separate `list_comments`/`list_subtasks` calls.
 - Filter to the chosen date range **client-side** on the returned items (created/updated/completed
   within it) — there's no server-side date filter.
 

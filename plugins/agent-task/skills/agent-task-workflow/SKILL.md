@@ -40,8 +40,8 @@ reject it (`invalid input syntax for type uuid`). To act on it: `search({ query:
 | Goal | Tool |
 |------|------|
 | Discover | `list_spaces`, `list_task_groups`, `list_projects`, `list_space_members`, `list_labels` |
-| Find | `search` (tasks/notes org-wide, projects need a space), `list_tasks_and_subtasks` (filter by space/status/assignee/project/group), `list_subtasks` (one task's children), `list_comments`, `fetch` (any entity by UUID/URL) |
-| Begin work | `start_work` (resumes/claims your ticket, else creates one) |
+| Find | `search` (tasks/notes org-wide, projects need a space), `list_tasks_and_subtasks` (filter by space/status/assignee/project/group), `list_subtasks` (one task's children), `list_comments`, `fetch` (any entity by UUID/URL — a fetched **task** also inlines `attachments`, recent `comments`, `subtasks`, and the active `claim` so you can act in one call) |
+| Begin work | `start_work` (resumes/claims your ticket, else creates one — also takes a contention claim, see below) |
 | Create | `create_task` (batch via `items[]`), `create_subtask`, `create_project`, `create_task_group`, `create_label`, `create_note` |
 | Update | `update_task`, `update_subtask`, `update_project`, `update_task_group`, `update_note`, `update_label` — each takes **any subset** of fields in one call |
 | Comment | `add_comment`, `update_comment`, `delete_comment` |
@@ -54,6 +54,23 @@ isBlocked). Labels are a **replace set**: `[]` clears them. Labels work on **sub
 
 `start_work` returns `action`: `resumed` | `picked_up` | `created`. If it resumed or picked up a
 ticket, **continue that one — don't create a duplicate**. Pass `title` only to force a new ticket.
+
+## Claiming & contention
+
+`start_work` now also takes a **claim** on the ticket so two agents don't work it at once, and the
+result carries it:
+
+- Success → `claim: { uuid, epoch }` (the `epoch` is a per-task fencing token).
+- Someone else already holds a live claim → `{ ok: false, action: "already_claimed", existingClaim: {…} }`.
+  **Don't barge in** — surface it, work a different ticket, or wait for it to release.
+- Re-running on your *own* claim just refreshes it (idempotent); `claim` is `null` when no claim
+  could be taken (e.g. an org key with no associated user).
+
+## Idempotent writes (safe retries)
+
+`add_comment`, `create_task`, and `create_subtask` accept an optional **`idempotencyKey`**. Pass a
+stable key when a step might be retried or resumed — the first success is recorded and replayed, so
+you never double-post a comment or double-create a task. Keys are scoped per org **and per tool**.
 
 ## Enum cheat-sheet
 

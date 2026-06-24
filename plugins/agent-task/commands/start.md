@@ -32,7 +32,10 @@ Input from the user: **$ARGUMENTS** (may be an `AI-XX` code, a title, a rough de
 6. **Create / claim.** Create with `create_task` (or reuse the found task), then a single
    `update_task` to set: `status: in_progress`, `assignee: "me"`, `groupUuid`, `projectUuid`,
    `labels`, and the `description`. (For subtasks use `create_subtask` / `update_subtask` — labels
-   work there too.)
+   work there too.) For the empty-input / pick-up path, `start_work` takes a **contention claim** —
+   if it returns `already_claimed`, another agent holds it: surface that and pick a different ticket
+   rather than working it in parallel (see the **Claiming & contention** section of
+   `agent-task-workflow`).
 7. **Coding work?** If this task involves code, note that the PR URL should be recorded on the task
    later via `update_task({ prUrl })` (see `/finish` and the periodic update behavior).
 
